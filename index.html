@@ -3,361 +3,672 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pebble IDE</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pebble IDE 0.2</title>
 <style>
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: #10131c;
-    color: #e8ecf5;
-    font-family: system-ui, sans-serif;
-  }
-
-  header {
-    padding: 18px 24px;
-    background: #191e2c;
-    border-bottom: 1px solid #30384b;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  header h1 { margin: 0; font-size: 23px; }
-  header span { color: #a6b1c8; font-size: 13px; }
-
-  main {
-    max-width: 1100px;
-    margin: auto;
-    padding: 20px;
-  }
-
-  .toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
-
-  button {
-    border: 0;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 700;
-  }
-
-  .run { background: #a5e5bd; color: #14291b; }
-  .secondary { background: #30384b; color: white; }
-
-  #editor {
-    width: 100%;
-    min-height: 300px;
-    resize: vertical;
-    padding: 18px;
-    background: #171b27;
-    color: #d6e4ff;
-    border: 1px solid #38435b;
-    border-radius: 10px;
-    font: 15px/1.7 monospace;
-    tab-size: 2;
-    outline: none;
-  }
-
-  #editor:focus { border-color: #91d8aa; }
-
-  .panel {
-    margin-top: 18px;
-    padding: 16px;
-    background: #191e2c;
-    border: 1px solid #30384b;
-    border-radius: 10px;
-  }
-
-  .panel h2 { margin-top: 0; font-size: 16px; }
-
-  #output {
-    min-height: 80px;
-    max-height: 300px;
-    overflow: auto;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    font: 14px/1.7 monospace;
-  }
-
-  .error { color: #ff9292; }
-  .success { color: #a5e5bd; }
-
-  code {
-    color: #a5e5bd;
-    background: #252c3b;
-    padding: 2px 5px;
-    border-radius: 4px;
-  }
-
-  .help p { line-height: 1.8; color: #c0c9da; }
+:root {
+  color-scheme: dark;
+  --bg: #0c1019;
+  --panel: #151c29;
+  --border: #303b50;
+  --text: #edf2fc;
+  --muted: #9caac0;
+  --green: #a5e5bd;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px system-ui, sans-serif;
+}
+header {
+  padding: 17px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+h1 { margin: 0; font-size: 22px; }
+h2 { font-size: 15px; margin: 0 0 13px; }
+small, .muted { color: var(--muted); }
+.version {
+  background: #254335;
+  color: var(--green);
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+main {
+  max-width: 1100px;
+  padding: 20px;
+  margin: auto;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+button, select {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 12px;
+  background: #222c3d;
+  color: var(--text);
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.15); }
+.run {
+  background: var(--green);
+  color: #14291c;
+  border-color: var(--green);
+  font-weight: 750;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr);
+  gap: 14px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px;
+  min-width: 0;
+}
+#editor {
+  display: block;
+  width: 100%;
+  min-height: 450px;
+  resize: vertical;
+  padding: 14px;
+  background: #0a0e16;
+  color: #c9e3ff;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  outline: none;
+  font: 14px/1.75 monospace;
+  tab-size: 2;
+  white-space: pre;
+}
+#editor:focus { border-color: var(--green); }
+#output {
+  min-height: 180px;
+  max-height: 350px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 13px/1.8 monospace;
+}
+.error { color: #ff9caa; }
+.success { color: var(--green); }
+.help { margin-top: 14px; }
+.help code {
+  color: var(--green);
+  background: #222c3d;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+.help p { line-height: 1.7; color: #c2cede; }
+#status { margin: 12px 0 0; color: var(--muted); }
+@media(max-width:700px) {
+  .workspace { grid-template-columns: 1fr; }
+  #editor { min-height: 350px; }
+  main { padding: 12px; }
+}
 </style>
 </head>
-
 <body>
 <header>
   <div>
     <h1>🪨 Pebble IDE</h1>
-    <span>A tiny programming language</span>
+    <small>Write. Run. Learn.</small>
   </div>
-  <span>Version 0.1</span>
+  <span class="version">Pebble 0.2</span>
 </header>
 
 <main>
   <div class="toolbar">
-    <button class="run" id="runButton">▶ Run program</button>
-    <button class="secondary" id="exampleButton">Load example</button>
-    <button class="secondary" id="clearButton">Clear editor</button>
+    <button class="run" id="run">▶ Run</button>
+    <button id="example">Load example</button>
+    <button id="clear">Clear</button>
+    <button id="download">Save .peb</button>
   </div>
 
-  <textarea id="editor" spellcheck="false"
-    aria-label="Pebble code editor">say "Hello, world!"
+  <div class="workspace">
+    <section class="panel">
+      <h2>Editor</h2>
+      <textarea id="editor" spellcheck="false"
+        aria-label="Pebble code editor"></textarea>
+      <p id="status">Ready to run.</p>
+    </section>
 
-set name to "Alex"
-say name
-
-set number to 10
-add 5 to number
-say number
-
-repeat 3 times
-  say "Pebble is fun!"
-end</textarea>
-
-  <section class="panel">
-    <h2>Output</h2>
-    <div id="output" aria-live="polite">Your program's output will appear here.</div>
-  </section>
+    <section class="panel">
+      <h2>Console</h2>
+      <div id="output" aria-live="polite">Your output appears here.</div>
+      <hr style="border-color:var(--border);margin:16px 0">
+      <h2>Quick reference</h2>
+      <div class="help">
+        <p><code>say "Hello"</code></p>
+        <p><code>set age to 12</code></p>
+        <p><code>ask name "Your name?"</code></p>
+        <p><code>add 2 to age</code></p>
+        <p><code>subtract 2 from age</code></p>
+        <p><code>multiply age by 2</code></p>
+        <p><code>divide age by 2</code></p>
+        <p><code>if age is greater than 10</code></p>
+        <p><code>else</code> / <code>end</code></p>
+        <p><code>repeat 3 times</code></p>
+        <p><code>function greet</code></p>
+        <p><code>call greet</code></p>
+        <p><code># comment</code></p>
+      </div>
+    </section>
+  </div>
 
   <section class="panel help">
-    <h2>Pebble language guide</h2>
-
-    <p><code>say "Hello!"</code> — print a message.</p>
-    <p><code>set name to "Alex"</code> — create a variable.</p>
-    <p><code>say name</code> — print a variable's value.</p>
-    <p><code>set score to 10</code> — store a number.</p>
-    <p><code>add 5 to score</code> — add to a variable.</p>
-    <p><code>subtract 2 from score</code> — subtract from a variable.</p>
-    <p><code>repeat 3 times</code> followed by commands and <code>end</code> — repeat commands.</p>
-    <p>Lines beginning with <code>#</code> are comments.</p>
+    <h2>Language documentation</h2>
+    <p><b>Variables:</b> <code>set score to 10</code>. Values can be strings, numbers, or booleans.</p>
+    <p><b>Conditions:</b> <code>if score is equal to 10</code>, <code>is not equal to</code>, <code>is greater than</code>, <code>is less than</code>, <code>is at least</code>, and <code>is at most</code>.</p>
+    <p><b>Logic:</b> combine conditions with <code>and</code> or <code>or</code>. Use <code>not</code> before a condition.</p>
+    <p><b>Booleans:</b> <code>true</code> and <code>false</code>.</p>
+    <p><b>Input:</b> <code>ask answer "What is 2 + 2?"</code> stores the response as text.</p>
+    <p><b>Functions:</b> create a function using <code>function greet</code>, put commands below it, and close it with <code>end</code>. Run it using <code>call greet</code>. Functions in this version take no parameters and return no value.</p>
+    <p><b>Loops:</b> <code>repeat 3 times</code> executes its block three times. Loops can be nested.</p>
+    <p><b>Arithmetic:</b> addition, subtraction, multiplication, and division require numeric values. Division by zero is an error.</p>
   </section>
 </main>
 
 <script>
+"use strict";
+
 const editor = document.getElementById("editor");
 const output = document.getElementById("output");
+const status = document.getElementById("status");
 
-const example = `# Welcome to Pebble!
+const starter = `# PEBBLE 0.2 DEMO
 
-say "Hello, world!"
+say "Welcome to Pebble!"
 
-set name to "Alex"
-say name
-
+set name to "Explorer"
 set score to 10
-add 5 to score
+
+say name
+say "Starting score:"
 say score
 
-subtract 3 from score
+add 5 to score
+multiply score by 2
+
+say "Score after bonuses:"
+say score
+
+if score is greater than 20
+  say "Excellent work!"
+else
+  say "Keep going!"
+end
+
+function reward
+  say "You earned a treasure!"
+  add 10 to score
+end
+
+call reward
+
+say "Final score:"
 say score
 
 repeat 3 times
-  say "Learning Pebble!"
-end`;
+  say "Adventure continues..."
+end
 
-document.getElementById("exampleButton").onclick = () => {
-  editor.value = example;
+say "End of program."`;
+
+editor.value = starter;
+
+document.getElementById("example").onclick = () => {
+  editor.value = starter;
+  status.textContent = "Example loaded.";
 };
 
-document.getElementById("clearButton").onclick = () => {
+document.getElementById("clear").onclick = () => {
   editor.value = "";
   output.textContent = "";
+  status.textContent = "Editor cleared.";
 };
 
-document.getElementById("runButton").onclick = runProgram;
+document.getElementById("download").onclick = () => {
+  const blob = new Blob([editor.value], {
+    type: "text/plain;charset=utf-8"
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "program.peb";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
+document.getElementById("run").onclick = runProgram;
 
 function runProgram() {
   output.textContent = "";
   output.className = "";
+  status.textContent = "Running...";
 
-  const variables = Object.create(null);
-  const results = [];
-  const MAX_STEPS = 10000;
+  try {
+    const program = parseProgram(editor.value);
+    const machine = {
+      variables: Object.create(null),
+      functions: Object.create(null),
+      lines: [],
+      steps: 0,
+      maxSteps: 20000,
+      maxCallDepth: 50
+    };
 
-  function error(message, line) {
-    throw new Error(`Line ${line}: ${message}`);
-  }
-
-  // Read text, numbers, or variable names.
-  function getValue(source, line) {
-    source = source.trim();
-
-    if (
-      source.startsWith('"') &&
-      source.endsWith('"') &&
-      source.length >= 2
-    ) {
-      return source.slice(1, -1)
-        .replace(/\\"/g, '"')
-        .replace(/\\n/g, "\n")
-        .replace(/\\\\/g, "\\");
-    }
-
-    if (/^-?\d+(?:\.\d+)?$/.test(source)) {
-      return Number(source);
-    }
-
-    if (/^[a-zA-Z_]\w*$/.test(source)) {
-      if (!Object.hasOwn(variables, source)) {
-        error(`Unknown variable "${source}".`, line);
+    // Register functions before running the main program.
+    for (const node of program) {
+      if (node.type === "function") {
+        if (Object.hasOwn(machine.functions, node.name)) {
+          fail(`Function "${node.name}" is already defined.`, node.line);
+        }
+        machine.functions[node.name] = node.body;
       }
-      return variables[source];
     }
 
-    error(`Invalid value "${source}".`, line);
-  }
+    const main = program.filter(node => node.type !== "function");
+    execute(main, machine, 0);
 
-  const lines = editor.value.split(/\r?\n/).map((raw, index) => ({
+    output.textContent = machine.lines.length
+      ? machine.lines.join("\n")
+      : "Program finished. No output.";
+    output.className = "success";
+    status.textContent = "Finished successfully.";
+  } catch (error) {
+    output.textContent = "Pebble error: " + error.message;
+    output.className = "error";
+    status.textContent = "Program failed.";
+  }
+}
+
+function fail(message, line) {
+  throw new Error(`Line ${line}: ${message}`);
+}
+
+function parseProgram(source) {
+  const lines = source.split(/\r?\n/).map((raw, index) => ({
     text: raw.trim(),
-    number: index + 1
+    line: index + 1
   }));
 
-  // Find matching END commands before executing loops.
-  function findEnd(start) {
-    let depth = 0;
+  let position = 0;
 
-    for (let i = start + 1; i < lines.length; i++) {
-      const text = lines[i].text;
+  function block(stops = []) {
+    const nodes = [];
 
-      if (/^repeat\s+\d+\s+times$/i.test(text)) depth++;
+    while (position < lines.length) {
+      const item = lines[position];
+      const text = item.text;
+      const lower = text.toLowerCase();
 
-      if (text.toLowerCase() === "end") {
-        if (depth === 0) return i;
-        depth--;
-      }
-    }
-
-    error("Missing 'end' for repeat.", lines[start].number);
-  }
-
-  let steps = 0;
-
-  function execute(start, finish) {
-    for (let i = start; i < finish; i++) {
-      if (++steps > MAX_STEPS) {
-        error("Program stopped: step limit reached.", lines[i].number);
+      if (!text || text.startsWith("#")) {
+        position++;
+        continue;
       }
 
-      const text = lines[i].text;
-      const line = lines[i].number;
-
-      if (!text || text.startsWith("#")) continue;
+      if (stops.includes(lower)) return nodes;
 
       let match;
 
-      // say VALUE
-      match = text.match(/^say\s+(.+)$/i);
+      if (lower === "else" || lower === "end") {
+        fail(`Unexpected "${text}".`, item.line);
+      }
+
+      match = text.match(/^if\s+(.+)$/i);
       if (match) {
-        results.push(String(getValue(match[1], line)));
+        position++;
+        const yes = block(["else", "end"]);
+        let no = [];
+
+        if (position >= lines.length) {
+          fail("Missing 'end' for if.", item.line);
+        }
+
+        if (lines[position].text.toLowerCase() === "else") {
+          position++;
+          no = block(["end"]);
+        }
+
+        if (position >= lines.length ||
+            lines[position].text.toLowerCase() !== "end") {
+          fail("Missing 'end' for if.", item.line);
+        }
+
+        position++;
+        nodes.push({
+          type: "if", condition: match[1],
+          yes, no, line: item.line
+        });
         continue;
       }
 
-      // set VARIABLE to VALUE
-      match = text.match(
-        /^set\s+([a-zA-Z_]\w*)\s+to\s+(.+)$/i
-      );
-      if (match) {
-        variables[match[1]] = getValue(match[2], line);
-        continue;
-      }
-
-      // add VALUE to VARIABLE
-      match = text.match(
-        /^add\s+(.+)\s+to\s+([a-zA-Z_]\w*)$/i
-      );
-      if (match) {
-        const value = getValue(match[1], line);
-        const name = match[2];
-
-        if (!Object.hasOwn(variables, name)) {
-          error(`Unknown variable "${name}".`, line);
-        }
-
-        if (typeof value !== "number" ||
-            typeof variables[name] !== "number") {
-          error("Addition requires numbers.", line);
-        }
-
-        variables[name] += value;
-        continue;
-      }
-
-      // subtract VALUE from VARIABLE
-      match = text.match(
-        /^subtract\s+(.+)\s+from\s+([a-zA-Z_]\w*)$/i
-      );
-      if (match) {
-        const value = getValue(match[1], line);
-        const name = match[2];
-
-        if (!Object.hasOwn(variables, name)) {
-          error(`Unknown variable "${name}".`, line);
-        }
-
-        if (typeof value !== "number" ||
-            typeof variables[name] !== "number") {
-          error("Subtraction requires numbers.", line);
-        }
-
-        variables[name] -= value;
-        continue;
-      }
-
-      // repeat NUMBER times ... end
       match = text.match(/^repeat\s+(\d+)\s+times$/i);
       if (match) {
-        const count = Number(match[1]);
+        position++;
+        const body = block(["end"]);
 
-        if (count > 1000) {
-          error("A repeat loop can run at most 1000 times.", line);
+        if (position >= lines.length) {
+          fail("Missing 'end' for repeat.", item.line);
         }
 
-        const endIndex = findEnd(i);
-
-        for (let n = 0; n < count; n++) {
-          execute(i + 1, endIndex);
-        }
-
-        i = endIndex;
+        position++;
+        nodes.push({
+          type: "repeat",
+          count: Number(match[1]),
+          body, line: item.line
+        });
         continue;
       }
 
-      if (text.toLowerCase() === "end") {
-        error("Unexpected 'end'.", line);
+      match = text.match(/^function\s+([a-zA-Z_]\w*)$/i);
+      if (match) {
+        position++;
+        const body = block(["end"]);
+
+        if (position >= lines.length) {
+          fail("Missing 'end' for function.", item.line);
+        }
+
+        position++;
+        nodes.push({
+          type: "function",
+          name: match[1],
+          body, line: item.line
+        });
+        continue;
       }
 
-      error(`Unknown command: "${text}".`, line);
+      nodes.push({ type: "command", text, line: item.line });
+      position++;
+    }
+
+    return nodes;
+  }
+
+  const result = block();
+
+  return result;
+}
+
+function getValue(source, machine, line) {
+  source = source.trim();
+
+  if (/^".*"$/.test(source)) {
+    return source.slice(1, -1)
+      .replace(/\\n/g, "\n")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
+  }
+
+  if (/^-?(?:\d+\.?\d*|\.\d+)$/.test(source)) {
+    return Number(source);
+  }
+
+  if (/^(true|false)$/i.test(source)) {
+    return source.toLowerCase() === "true";
+  }
+
+  if (/^[a-zA-Z_]\w*$/.test(source)) {
+    if (!Object.hasOwn(machine.variables, source)) {
+      fail(`Unknown variable "${source}".`, line);
+    }
+    return machine.variables[source];
+  }
+
+  fail(`Invalid value "${source}".`, line);
+}
+
+function conditionValue(source, machine, line) {
+  source = source.trim();
+
+  if (/^not\s+/i.test(source)) {
+    return !conditionValue(source.replace(/^not\s+/i, ""), machine, line);
+  }
+
+  // Split boolean operators only when they occur outside quotes.
+  const parts = splitLogic(source, "or");
+  if (parts.length > 1) {
+    return parts.some(part => conditionValue(part, machine, line));
+  }
+
+  const andParts = splitLogic(source, "and");
+  if (andParts.length > 1) {
+    return andParts.every(part => conditionValue(part, machine, line));
+  }
+
+  const operators = [
+    ["is not equal to", "!="],
+    ["is greater than or equal to", ">="],
+    ["is less than or equal to", "<="],
+    ["is greater than", ">"],
+    ["is less than", "<"],
+    ["is equal to", "=="],
+    ["is at least", ">="],
+    ["is at most", "<="]
+  ];
+
+  for (const [phrase, operator] of operators) {
+    const index = findOutsideQuotes(source, phrase);
+
+    if (index !== -1) {
+      const left = getValue(source.slice(0, index), machine, line);
+      const right = getValue(
+        source.slice(index + phrase.length), machine, line
+      );
+
+      if (operator === "==") return left === right;
+      if (operator === "!=") return left !== right;
+
+      if (typeof left !== "number" || typeof right !== "number") {
+        fail("Comparison requires numbers.", line);
+      }
+
+      if (operator === ">") return left > right;
+      if (operator === "<") return left < right;
+      if (operator === ">=") return left >= right;
+      if (operator === "<=") return left <= right;
     }
   }
 
-  try {
-    execute(0, lines.length);
-    output.className = "success";
-    output.textContent = results.length
-      ? results.join("\n")
-      : "Program finished successfully. No output.";
-  } catch (err) {
-    output.className = "error";
-    output.textContent = "Pebble error: " + err.message;
+  const value = getValue(source, machine, line);
+
+  if (typeof value !== "boolean") {
+    fail("Condition must be true or false, or use a comparison.", line);
+  }
+
+  return value;
+}
+
+function findOutsideQuotes(source, phrase) {
+  let quoted = false;
+  let escaped = false;
+
+  for (let i = 0; i <= source.length - phrase.length; i++) {
+    const ch = source[i];
+
+    if (ch === '"' && !escaped) quoted = !quoted;
+
+    if (!quoted &&
+        source.slice(i, i + phrase.length).toLowerCase() === phrase) {
+      return i;
+    }
+
+    if (ch === "\\" && !escaped) escaped = true;
+    else escaped = false;
+  }
+
+  return -1;
+}
+
+function splitLogic(source, operator) {
+  const result = [];
+  let start = 0;
+  let quoted = false;
+  let escaped = false;
+  const pattern = new RegExp("\\s+" + operator + "\\s+", "i");
+
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+
+    if (ch === '"' && !escaped) quoted = !quoted;
+
+    if (!quoted) {
+      const match = source.slice(i).match(pattern);
+
+      if (match) {
+        result.push(source.slice(start, i));
+        i += match[0].length - 1;
+        start = i + 1;
+      }
+    }
+
+    if (ch === "\\" && !escaped) escaped = true;
+    else escaped = false;
+  }
+
+  if (!result.length) return [source];
+
+  result.push(source.slice(start));
+  return result;
+}
+
+function execute(nodes, machine, depth) {
+  if (depth > machine.maxCallDepth) {
+    throw new Error("Maximum function call depth exceeded.");
+  }
+
+  for (const node of nodes) {
+    machine.steps++;
+
+    if (machine.steps > machine.maxSteps) {
+      fail("Execution step limit exceeded.", node.line);
+    }
+
+    if (node.type === "if") {
+      const branch = conditionValue(
+        node.condition, machine, node.line
+      ) ? node.yes : node.no;
+
+      execute(branch, machine, depth);
+      continue;
+    }
+
+    if (node.type === "repeat") {
+      if (node.count > 1000) {
+        fail("Repeat limit is 1000 iterations.", node.line);
+      }
+
+      for (let i = 0; i < node.count; i++) {
+        execute(node.body, machine, depth);
+      }
+      continue;
+    }
+
+    if (node.type !== "command") continue;
+
+    const text = node.text;
+    const line = node.line;
+    let match;
+
+    match = text.match(/^say\s+(.+)$/i);
+    if (match) {
+      machine.lines.push(
+        String(getValue(match[1], machine, line))
+      );
+      continue;
+    }
+
+    match = text.match(
+      /^set\s+([a-zA-Z_]\w*)\s+to\s+(.+)$/i
+    );
+    if (match) {
+      machine.variables[match[1]] =
+        getValue(match[2], machine, line);
+      continue;
+    }
+
+    match = text.match(
+      /^ask\s+([a-zA-Z_]\w*)\s+"((?:\\.|[^"\\])*)"$/i
+    );
+    if (match) {
+      const question = match[2]
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"');
+
+      const answer = prompt(question);
+
+      if (answer === null) {
+        fail("Input cancelled by user.", line);
+      }
+
+      machine.variables[match[1]] = answer;
+      continue;
+    }
+
+    match = text.match(
+      /^(add|subtract|multiply|divide)\s+(.+?)\s+(to|from|by)\s+([a-zA-Z_]\w*)$/i
+    );
+
+    if (match) {
+      const operation = match[1].toLowerCase();
+      const amount = getValue(match[2], machine, line);
+      const direction = match[3].toLowerCase();
+      const name = match[4];
+
+      if (!Object.hasOwn(machine.variables, name)) {
+        fail(`Unknown variable "${name}".`, line);
+      }
+
+      const current = machine.variables[name];
+
+      if (typeof current !== "number" ||
+          typeof amount !== "number") {
+        fail("Arithmetic requires numbers.", line);
+      }
+
+      if (operation === "add" && direction === "to") {
+        machine.variables[name] = current + amount;
+      } else if (operation === "subtract" && direction === "from") {
+        machine.variables[name] = current - amount;
+      } else if (operation === "multiply" && direction === "by") {
+        machine.variables[name] = current * amount;
+      } else if (operation === "divide" && direction === "by") {
+        if (amount === 0) fail("Division by zero.", line);
+        machine.variables[name] = current / amount;
+      } else {
+        fail(`Incorrect syntax for ${operation}.`, line);
+      }
+      continue;
+    }
+
+    match = text.match(/^call\s+([a-zA-Z_]\w*)$/i);
+    if (match) {
+      const name = match[1];
+
+      if (!Object.hasOwn(machine.functions, name)) {
+        fail(`Unknown function "${name}".`, line);
+      }
+
+      execute(machine.functions[name], machine, depth + 1);
+      continue;
+    }
+
+    fail(`Unknown command "${text}".`, line);
   }
 }
 </script>
