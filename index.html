@@ -1,0 +1,365 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pebble IDE</title>
+
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #10131c;
+    color: #e8ecf5;
+    font-family: system-ui, sans-serif;
+  }
+
+  header {
+    padding: 18px 24px;
+    background: #191e2c;
+    border-bottom: 1px solid #30384b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  header h1 { margin: 0; font-size: 23px; }
+  header span { color: #a6b1c8; font-size: 13px; }
+
+  main {
+    max-width: 1100px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    border: 0;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+
+  .run { background: #a5e5bd; color: #14291b; }
+  .secondary { background: #30384b; color: white; }
+
+  #editor {
+    width: 100%;
+    min-height: 300px;
+    resize: vertical;
+    padding: 18px;
+    background: #171b27;
+    color: #d6e4ff;
+    border: 1px solid #38435b;
+    border-radius: 10px;
+    font: 15px/1.7 monospace;
+    tab-size: 2;
+    outline: none;
+  }
+
+  #editor:focus { border-color: #91d8aa; }
+
+  .panel {
+    margin-top: 18px;
+    padding: 16px;
+    background: #191e2c;
+    border: 1px solid #30384b;
+    border-radius: 10px;
+  }
+
+  .panel h2 { margin-top: 0; font-size: 16px; }
+
+  #output {
+    min-height: 80px;
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font: 14px/1.7 monospace;
+  }
+
+  .error { color: #ff9292; }
+  .success { color: #a5e5bd; }
+
+  code {
+    color: #a5e5bd;
+    background: #252c3b;
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  .help p { line-height: 1.8; color: #c0c9da; }
+</style>
+</head>
+
+<body>
+<header>
+  <div>
+    <h1>🪨 Pebble IDE</h1>
+    <span>A tiny programming language</span>
+  </div>
+  <span>Version 0.1</span>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button class="run" id="runButton">▶ Run program</button>
+    <button class="secondary" id="exampleButton">Load example</button>
+    <button class="secondary" id="clearButton">Clear editor</button>
+  </div>
+
+  <textarea id="editor" spellcheck="false"
+    aria-label="Pebble code editor">say "Hello, world!"
+
+set name to "Alex"
+say name
+
+set number to 10
+add 5 to number
+say number
+
+repeat 3 times
+  say "Pebble is fun!"
+end</textarea>
+
+  <section class="panel">
+    <h2>Output</h2>
+    <div id="output" aria-live="polite">Your program's output will appear here.</div>
+  </section>
+
+  <section class="panel help">
+    <h2>Pebble language guide</h2>
+
+    <p><code>say "Hello!"</code> — print a message.</p>
+    <p><code>set name to "Alex"</code> — create a variable.</p>
+    <p><code>say name</code> — print a variable's value.</p>
+    <p><code>set score to 10</code> — store a number.</p>
+    <p><code>add 5 to score</code> — add to a variable.</p>
+    <p><code>subtract 2 from score</code> — subtract from a variable.</p>
+    <p><code>repeat 3 times</code> followed by commands and <code>end</code> — repeat commands.</p>
+    <p>Lines beginning with <code>#</code> are comments.</p>
+  </section>
+</main>
+
+<script>
+const editor = document.getElementById("editor");
+const output = document.getElementById("output");
+
+const example = `# Welcome to Pebble!
+
+say "Hello, world!"
+
+set name to "Alex"
+say name
+
+set score to 10
+add 5 to score
+say score
+
+subtract 3 from score
+say score
+
+repeat 3 times
+  say "Learning Pebble!"
+end`;
+
+document.getElementById("exampleButton").onclick = () => {
+  editor.value = example;
+};
+
+document.getElementById("clearButton").onclick = () => {
+  editor.value = "";
+  output.textContent = "";
+};
+
+document.getElementById("runButton").onclick = runProgram;
+
+function runProgram() {
+  output.textContent = "";
+  output.className = "";
+
+  const variables = Object.create(null);
+  const results = [];
+  const MAX_STEPS = 10000;
+
+  function error(message, line) {
+    throw new Error(`Line ${line}: ${message}`);
+  }
+
+  // Read text, numbers, or variable names.
+  function getValue(source, line) {
+    source = source.trim();
+
+    if (
+      source.startsWith('"') &&
+      source.endsWith('"') &&
+      source.length >= 2
+    ) {
+      return source.slice(1, -1)
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, "\n")
+        .replace(/\\\\/g, "\\");
+    }
+
+    if (/^-?\d+(?:\.\d+)?$/.test(source)) {
+      return Number(source);
+    }
+
+    if (/^[a-zA-Z_]\w*$/.test(source)) {
+      if (!Object.hasOwn(variables, source)) {
+        error(`Unknown variable "${source}".`, line);
+      }
+      return variables[source];
+    }
+
+    error(`Invalid value "${source}".`, line);
+  }
+
+  const lines = editor.value.split(/\r?\n/).map((raw, index) => ({
+    text: raw.trim(),
+    number: index + 1
+  }));
+
+  // Find matching END commands before executing loops.
+  function findEnd(start) {
+    let depth = 0;
+
+    for (let i = start + 1; i < lines.length; i++) {
+      const text = lines[i].text;
+
+      if (/^repeat\s+\d+\s+times$/i.test(text)) depth++;
+
+      if (text.toLowerCase() === "end") {
+        if (depth === 0) return i;
+        depth--;
+      }
+    }
+
+    error("Missing 'end' for repeat.", lines[start].number);
+  }
+
+  let steps = 0;
+
+  function execute(start, finish) {
+    for (let i = start; i < finish; i++) {
+      if (++steps > MAX_STEPS) {
+        error("Program stopped: step limit reached.", lines[i].number);
+      }
+
+      const text = lines[i].text;
+      const line = lines[i].number;
+
+      if (!text || text.startsWith("#")) continue;
+
+      let match;
+
+      // say VALUE
+      match = text.match(/^say\s+(.+)$/i);
+      if (match) {
+        results.push(String(getValue(match[1], line)));
+        continue;
+      }
+
+      // set VARIABLE to VALUE
+      match = text.match(
+        /^set\s+([a-zA-Z_]\w*)\s+to\s+(.+)$/i
+      );
+      if (match) {
+        variables[match[1]] = getValue(match[2], line);
+        continue;
+      }
+
+      // add VALUE to VARIABLE
+      match = text.match(
+        /^add\s+(.+)\s+to\s+([a-zA-Z_]\w*)$/i
+      );
+      if (match) {
+        const value = getValue(match[1], line);
+        const name = match[2];
+
+        if (!Object.hasOwn(variables, name)) {
+          error(`Unknown variable "${name}".`, line);
+        }
+
+        if (typeof value !== "number" ||
+            typeof variables[name] !== "number") {
+          error("Addition requires numbers.", line);
+        }
+
+        variables[name] += value;
+        continue;
+      }
+
+      // subtract VALUE from VARIABLE
+      match = text.match(
+        /^subtract\s+(.+)\s+from\s+([a-zA-Z_]\w*)$/i
+      );
+      if (match) {
+        const value = getValue(match[1], line);
+        const name = match[2];
+
+        if (!Object.hasOwn(variables, name)) {
+          error(`Unknown variable "${name}".`, line);
+        }
+
+        if (typeof value !== "number" ||
+            typeof variables[name] !== "number") {
+          error("Subtraction requires numbers.", line);
+        }
+
+        variables[name] -= value;
+        continue;
+      }
+
+      // repeat NUMBER times ... end
+      match = text.match(/^repeat\s+(\d+)\s+times$/i);
+      if (match) {
+        const count = Number(match[1]);
+
+        if (count > 1000) {
+          error("A repeat loop can run at most 1000 times.", line);
+        }
+
+        const endIndex = findEnd(i);
+
+        for (let n = 0; n < count; n++) {
+          execute(i + 1, endIndex);
+        }
+
+        i = endIndex;
+        continue;
+      }
+
+      if (text.toLowerCase() === "end") {
+        error("Unexpected 'end'.", line);
+      }
+
+      error(`Unknown command: "${text}".`, line);
+    }
+  }
+
+  try {
+    execute(0, lines.length);
+    output.className = "success";
+    output.textContent = results.length
+      ? results.join("\n")
+      : "Program finished successfully. No output.";
+  } catch (err) {
+    output.className = "error";
+    output.textContent = "Pebble error: " + err.message;
+  }
+}
+</script>
+</body>
+</html>
