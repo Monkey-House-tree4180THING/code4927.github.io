@@ -6,118 +6,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pebble IDE 0.2</title>
 <style>
+
+/* Pebble IDE 0.2 — 2018 theme */
+
 :root {
-  color-scheme: dark;
-  --bg: #0c1019;
-  --panel: #151c29;
-  --border: #303b50;
-  --text: #edf2fc;
-  --muted: #9caac0;
-  --green: #a5e5bd;
+  --bg: #e9ecef;
+  --panel: #ffffff;
+  --border: #ced4da;
+  --text: #343a40;
+  --muted: #6c757d;
+  --blue: #007bff;
+  --green: #28a745;
 }
-* { box-sizing: border-box; }
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 14px system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
 }
+
 header {
-  padding: 17px 22px;
+  background: #343a40;
+  color: white;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  background: var(--panel);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 3px solid #007bff;
 }
-h1 { margin: 0; font-size: 22px; }
-h2 { font-size: 15px; margin: 0 0 13px; }
-small, .muted { color: var(--muted); }
+
+header h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+header small {
+  color: #ced4da;
+}
+
 .version {
-  background: #254335;
-  color: var(--green);
-  border-radius: 20px;
-  padding: 5px 10px;
+  background: #007bff;
+  color: white;
+  padding: 5px 9px;
+  border-radius: 3px;
+  font-size: 12px;
 }
+
 main {
-  max-width: 1100px;
+  max-width: 1200px;
   padding: 20px;
   margin: auto;
 }
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 7px;
+  margin-bottom: 14px;
 }
-button, select {
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 9px 12px;
-  background: #222c3d;
-  color: var(--text);
+
+button {
+  background: #f8f9fa;
+  color: #343a40;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  padding: 8px 13px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
   cursor: pointer;
 }
-button:hover { filter: brightness(1.15); }
-.run {
-  background: var(--green);
-  color: #14291c;
-  border-color: var(--green);
-  font-weight: 750;
+
+button:hover {
+  background: #e2e6ea;
 }
+
+.run {
+  background: #28a745;
+  border-color: #218838;
+  color: white;
+  font-weight: bold;
+}
+
+.run:hover {
+  background: #218838;
+}
+
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr);
+  gap: 15px;
 }
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 15px;
   min-width: 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
 }
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 #editor {
   display: block;
   width: 100%;
   min-height: 450px;
   resize: vertical;
   padding: 14px;
-  background: #0a0e16;
-  color: #c9e3ff;
-  border: 1px solid var(--border);
-  border-radius: 7px;
+  background: #282c34;
+  color: #abb2bf;
+  border: 1px solid #181a1f;
+  border-radius: 3px;
   outline: none;
-  font: 14px/1.75 monospace;
+  font: 14px/1.7 Consolas, "Courier New", monospace;
   tab-size: 2;
-  white-space: pre;
 }
-#editor:focus { border-color: var(--green); }
+
+#editor:focus {
+  border-color: #007bff;
+}
+
 #output {
   min-height: 180px;
   max-height: 350px;
   overflow: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font: 13px/1.8 monospace;
+  font: 13px/1.7 Consolas, "Courier New", monospace;
+  color: #343a40;
 }
-.error { color: #ff9caa; }
-.success { color: var(--green); }
-.help { margin-top: 14px; }
+
+.error {
+  color: #dc3545;
+}
+
+.success {
+  color: #218838;
+}
+
+.help {
+  margin-top: 15px;
+}
+
 .help code {
-  color: var(--green);
-  background: #222c3d;
+  background: #e9ecef;
+  color: #0056b3;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: 2px;
 }
-.help p { line-height: 1.7; color: #c2cede; }
-#status { margin: 12px 0 0; color: var(--muted); }
-@media(max-width:700px) {
-  .workspace { grid-template-columns: 1fr; }
-  #editor { min-height: 350px; }
-  main { padding: 12px; }
+
+.help p {
+  line-height: 1.7;
+  color: #495057;
+}
+
+#status {
+  border-top: 1px solid #dee2e6;
+  padding-top: 9px;
+  margin-bottom: 0;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  #editor {
+    min-height: 350px;
+  }
+
+  main {
+    padding: 12px;
+  }
 }
 </style>
 </head>
